@@ -112,6 +112,6 @@ mod tests {
         assert!(acc.locked);
 
         // Important: should NOT record tx when ignored due to lock
-        assert!(ledger.txs.get(&10).is_none());
+        assert!(!ledger.txs.contains_key(&10));
     }
 }

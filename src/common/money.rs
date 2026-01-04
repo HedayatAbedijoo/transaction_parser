@@ -41,25 +41,6 @@ impl Money {
         self.0
     }
 
-    /// Parse decimal string into fixed-point with 4dp using BigDecimal.
-    /// Examples: "1", "1.2", "1.2345", "  2.0000 "
-    // pub fn from_str(s: &str) -> Result<Self, ParseBigDecimalError> {
-    //     let t = s.trim();
-    //     if t.is_empty() {
-    //         return Err(ParseBigDecimalError::Other("empty amount".into()));
-    //     }
-
-    //     let bd: BigDecimal = t.parse()?;
-
-    //     // Scale to 4 decimal places
-    //     let scaled = (bd * BigDecimal::from(SCALE)).round(0);
-    //     let value: i64 = scaled
-    //         .to_i64()
-    //         .ok_or_else(|| ParseBigDecimalError::Other("amount overflow".into()))?;
-
-    //     Ok(Money(value))
-    // }
-
     pub fn to_string_4dp(&self) -> String {
         let bd = BigDecimal::from(self.0) / BigDecimal::from(SCALE);
         format!("{:.4}", bd)

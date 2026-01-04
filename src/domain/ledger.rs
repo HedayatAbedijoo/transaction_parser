@@ -19,6 +19,6 @@ impl Ledger {
     }
 
     pub fn get_or_create_account(&mut self, client_id: u16) -> &mut Account {
-        self.accounts.entry(client_id).or_insert_with(Account::new)
+        self.accounts.entry(client_id).or_default()
     }
 }

@@ -15,12 +15,7 @@ pub fn handle(ledger: &mut Ledger, client: u16, tx: u32) -> Result<(), AppError>
 
     let (tx_client, tx_type, tx_status, amount) = {
         match ledger.txs.get(&tx) {
-            Some(t) => (
-                t.client,
-                t.tx_type.clone(),
-                t.tx_status.clone(),
-                t.amount.clone(),
-            ),
+            Some(t) => (t.client, t.tx_type, t.tx_status, t.amount),
             None => return Ok(()),
         }
     };
