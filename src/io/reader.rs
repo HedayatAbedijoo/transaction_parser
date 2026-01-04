@@ -1,5 +1,5 @@
 use crate::common::{event::TransactionEvent, money::Money};
-use std::io::Read;
+use std::{io::Read, str::FromStr};
 
 #[derive(serde::Deserialize)]
 /// Internal CSV row representation matching the input headers. The amount

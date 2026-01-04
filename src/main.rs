@@ -1,5 +1,6 @@
-use transaction_parser::io::reader::read_transactions;
-
+use transaction_parser::app;
 fn main() {
-    println!("Hello, world!");
+    if let Err(e) = app::run(std::env::args()) {
+        eprintln!("{e}");
+    }
 }

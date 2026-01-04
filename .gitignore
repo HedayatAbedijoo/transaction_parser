@@ -1,1 +1,14 @@
 /target
+use crate::domain::{delta::Delta, money::Money};
+
+/// Client account balances and lock state.
+
+#[derive(Debug, Clone)]
+pub struct Account {
+    /// Funds available for normal use.
+    pub available: Money,
+    /// Funds held due to disputes.
+    pub held: Money,
+    /// Frozen after a chargeback.
+    pub locked: bool,
+}

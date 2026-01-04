@@ -9,7 +9,7 @@ const SCALE: i64 = 10_000;
 #[derive(Debug, Clone, Copy, Default)]
 /// A struct representing monetary value in the smallest currency unit (e.g., cents).
 ///
-/// # Why Use Money?
+/// # Why Use Money? It is a Value Object.
 /// Using `Money` as a wrapper around `i64` provides type safety and prevents confusion
 /// with other numeric values. It makes the code more readable and prevents accidental
 /// mixing of different numeric types. By storing money as an integer (in the smallest
@@ -29,6 +29,9 @@ impl Money {
     pub fn new(value: i64) -> Self {
         Self(value)
     }
+    pub fn from_i64(value: i64) -> Self {
+        Money(value)
+    }
 
     pub fn zero() -> Self {
         Money(0)
@@ -40,7 +43,33 @@ impl Money {
 
     /// Parse decimal string into fixed-point with 4dp using BigDecimal.
     /// Examples: "1", "1.2", "1.2345", "  2.0000 "
-    pub fn from_str(s: &str) -> Result<Self, ParseBigDecimalError> {
+    // pub fn from_str(s: &str) -> Result<Self, ParseBigDecimalError> {
+    //     let t = s.trim();
+    //     if t.is_empty() {
+    //         return Err(ParseBigDecimalError::Other("empty amount".into()));
+    //     }
+
+    //     let bd: BigDecimal = t.parse()?;
+
+    //     // Scale to 4 decimal places
+    //     let scaled = (bd * BigDecimal::from(SCALE)).round(0);
+    //     let value: i64 = scaled
+    //         .to_i64()
+    //         .ok_or_else(|| ParseBigDecimalError::Other("amount overflow".into()))?;
+
+    //     Ok(Money(value))
+    // }
+
+    pub fn to_string_4dp(&self) -> String {
+        let bd = BigDecimal::from(self.0) / BigDecimal::from(SCALE);
+        format!("{:.4}", bd)
+    }
+}
+
+impl std::str::FromStr for Money {
+    type Err = ParseBigDecimalError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let t = s.trim();
         if t.is_empty() {
             return Err(ParseBigDecimalError::Other("empty amount".into()));
@@ -55,11 +84,6 @@ impl Money {
             .ok_or_else(|| ParseBigDecimalError::Other("amount overflow".into()))?;
 
         Ok(Money(value))
-    }
-
-    pub fn to_string_4dp(&self) -> String {
-        let bd = BigDecimal::from(self.0) / BigDecimal::from(SCALE);
-        format!("{:.4}", bd)
     }
 }
 
@@ -110,6 +134,8 @@ impl AddAssign for Money {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
 
     #[test]
