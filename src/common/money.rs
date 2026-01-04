@@ -1,6 +1,5 @@
 use bigdecimal::BigDecimal;
 use bigdecimal::*;
-use num_traits::ToPrimitive;
 use std::cmp::Ordering;
 use std::fmt;
 use std::ops::{Add, AddAssign, Sub, SubAssign};

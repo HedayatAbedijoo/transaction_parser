@@ -18,24 +18,27 @@ pub fn handle(ledger: &mut Ledger, client: u16, tx: u32, amount: Money) -> Resul
         return Ok(());
     }
 
-    apply_withdrawal(ledger.get_or_create_account(client), amount);
-
-    ledger.txs.insert(
-        tx,
-        TransactionRecord {
-            tx_id: tx,
-            client,
-            amount,
-            tx_type: TxType::Withdrawal,
-            tx_status: TxStatus::Normal,
-        },
-    );
+    if apply_withdrawal(ledger.get_or_create_account(client), amount) {
+        ledger.txs.insert(
+            tx,
+            TransactionRecord {
+                tx_id: tx,
+                client,
+                amount,
+                tx_type: TxType::Withdrawal,
+                tx_status: TxStatus::Normal,
+            },
+        );
+    }
     Ok(())
 }
 
-fn apply_withdrawal(acc: &mut Account, amount: Money) {
+fn apply_withdrawal(acc: &mut Account, amount: Money) -> bool {
     if acc.available >= amount {
         acc.available -= amount;
+        true
+    } else {
+        false
     }
 }
 
@@ -91,10 +94,10 @@ mod tests {
         let acc = ledger.get_or_create_account(client);
         assert_eq!(acc.available, money(30), "available should not go negative");
 
-        let rec = ledger.txs.get(&tx).expect("tx should be recorded");
-        assert_eq!(rec.tx_type, TxType::Withdrawal);
-        assert_eq!(rec.tx_status, TxStatus::Normal);
-        assert_eq!(rec.amount, money(50));
+        assert!(
+            !ledger.txs.contains_key(&tx),
+            "tx should not be recorded for insufficient funds"
+        );
     }
 
     #[test]

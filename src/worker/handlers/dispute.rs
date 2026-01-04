@@ -35,23 +35,17 @@ pub fn handle(ledger: &mut Ledger, client: u16, tx: u32) -> Result<(), AppError>
         return Ok(());
     }
 
-    if apply_dispute(ledger.get_or_create_account(client), amount) {
-        if let Some(t) = ledger.txs.get_mut(&tx) {
-            t.set_status(TxStatus::Disputed);
-        }
+    apply_dispute(ledger.get_or_create_account(client), amount);
+    if let Some(t) = ledger.txs.get_mut(&tx) {
+        t.set_status(TxStatus::Disputed);
     }
 
     Ok(())
 }
 
-fn apply_dispute(acc: &mut Account, amount: Money) -> bool {
-    if acc.available >= amount {
-        acc.available -= amount;
-        acc.held += amount;
-        true
-    } else {
-        false
-    }
+fn apply_dispute(acc: &mut Account, amount: Money) {
+    acc.available -= amount;
+    acc.held += amount;
 }
 
 #[cfg(test)]
@@ -184,9 +178,6 @@ mod tests {
 
     #[test]
     fn test_handle_insufficient_funds() {
-        // This tests the internal logic of `apply` indirectly via `handle`
-        // or directly if we want to unit test the private fn.
-        // Here we test via `handle` where available < amount.
         let mut ledger = Ledger::default();
         let client_id = 1;
         let tx_id = 100;
@@ -196,17 +187,17 @@ mod tests {
             TransactionRecord::new(tx_id, client_id, amount, TxType::Deposit, TxStatus::Normal);
         ledger.txs.insert(tx_id, tx);
 
-        // Account has 0 available, tx amount is 100.
+        // Account has 0 available
         let result = handle(&mut ledger, client_id, tx_id);
         assert!(result.is_ok());
 
         let account = ledger.get_or_create_account(client_id);
 
-        // apply() checks: if acc.available >= amount. 0 < 100, so no change.
-        assert_eq!(account.available, Money::from_str("0.0").unwrap());
-        assert_eq!(account.held, Money::from_str("0.0").unwrap());
+        // Available can go negative; held equals the disputed amount; tx becomes Disputed
+        assert_eq!(account.available, Money::from_str("-100.0").unwrap());
+        assert_eq!(account.held, amount);
 
         let tx = ledger.txs.get(&tx_id).unwrap();
-        assert_eq!(tx.tx_status, TxStatus::Normal);
+        assert_eq!(tx.tx_status, TxStatus::Disputed);
     }
 }

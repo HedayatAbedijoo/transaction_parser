@@ -15,7 +15,9 @@ fn run_case(input_csv: &str) -> String {
 
     for row in transaction_parser::io::reader::read_transactions(&mut csv_reader) {
         let ev = row.expect("failed to parse input row");
-        worker.process(&mut ledger, ev);
+        worker
+            .process(&mut ledger, ev)
+            .expect("failed to process event");
     }
 
     let mut out = Vec::<u8>::new();
